@@ -5,6 +5,8 @@
 #include <cmath>
 #include <random>
 #include <chrono>
+#include <cctype>
+#include <algorithm>
 
 typedef std::size_t HASH_INDEX_T;
 
@@ -20,6 +22,29 @@ struct MyStringHash {
     HASH_INDEX_T operator()(const std::string& k) const
     {
         // Add your code here
+        HASH_INDEX_T w[5] = {0, 0, 0, 0, 0};
+        int n = static_cast<int>(k.size());
+        int pos = n;
+        int wIndex = 4;
+        while(pos > 0 && wIndex >= 0) {
+          int start = std::max(0, pos - 6);
+          HASH_INDEX_T value = 0;
+          HASH_INDEX_T power = 1;
+
+          for(int i = pos - 1; i >= start; i--) {
+            HASH_INDEX_T d = letterDigitToNumber(k[i]);
+            value += d * power;
+            power *= 36;
+          }
+          w[wIndex] = value;
+          wIndex--;
+          pos -= 6;
+        }
+        HASH_INDEX_T h = 0;
+        for(int i = 0; i < 5; i++) {
+          h += rValues[i] * w[i];
+        }
+        return h;
 
 
     }
@@ -28,6 +53,15 @@ struct MyStringHash {
     HASH_INDEX_T letterDigitToNumber(char letter) const
     {
         // Add code here or delete this helper function if you do not want it
+        unsigned char c = static_cast<unsigned char>(letter);
+        c = static_cast<unsigned char>(std::tolower(c));
+        if(c >= 'a' && c <= 'z') {
+          return static_cast<HASH_INDEX_T>(c - 'a');
+        }
+        else if(c >= '0' && c <= '9') {
+          return static_cast<HASH_INDEX_T>(26 + (c - '0'));
+        }
+        return 0;
 
     }
 
